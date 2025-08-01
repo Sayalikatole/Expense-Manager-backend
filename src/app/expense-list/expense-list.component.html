@@ -1,0 +1,266 @@
+
+
+<div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex flex-col items-center py-8">
+  <div class="w-full max-w-3xl bg-white rounded-xl shadow-lg p-8 animate-fade-in">
+    <h2 class="text-3xl font-bold text-purple-700 mb-6 text-center">Expense Manager</h2>
+    <!-- Tabs for Card, Pie Chart, Bar Chart -->
+    <div class="flex gap-2 mb-4">
+      <button (click)="setTab('card')" [ngClass]="{'bg-purple-600 text-white': activeTab==='card', 'bg-white text-purple-700 border border-purple-200': activeTab!=='card'}" class="px-4 py-2 rounded-t-lg font-semibold focus:outline-none transition">Card View</button>
+      <button (click)="setTab('pie')" [ngClass]="{'bg-purple-600 text-white': activeTab==='pie', 'bg-white text-purple-700 border border-purple-200': activeTab!=='pie'}" class="px-4 py-2 rounded-t-lg font-semibold focus:outline-none transition">Chart View</button>
+      <button (click)="setTab('bar')" [ngClass]="{'bg-purple-600 text-white': activeTab==='bar', 'bg-white text-purple-700 border border-purple-200': activeTab!=='bar'}" class="px-4 py-2 rounded-t-lg font-semibold focus:outline-none transition">Bar Chart</button>
+    </div>
+    <!-- Card View -->
+    <div *ngIf="activeTab === 'card'" class="summary-cards-modern flex flex-col sm:flex-row gap-6 mb-8 animate-fade-in">
+      <div class="modern-card total" (click)="animateCard($event, 'total')">
+        <div class="flex items-center gap-3">
+          <div class="icon-ping relative">
+            <span class="ping-bg bg-indigo-200"></span>
+            <svg class="icon-svg text-indigo-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg>
+          </div>
+          <span class="modern-label">Total</span>
+        </div>
+        <div class="modern-value">₹{{ totalExpense }}</div>
+      </div>
+      <div class="modern-card highest" (click)="animateCard($event, 'highest')">
+        <div class="flex items-center gap-3">
+          <div class="icon-ping relative">
+            <span class="ping-bg bg-green-200"></span>
+            <svg class="icon-svg text-green-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="10" width="12" height="8" rx="2"/><path d="M12 6v4"/><circle cx="12" cy="6" r="2" fill="currentColor"/></svg>
+          </div>
+          <span class="modern-label">Highest</span>
+        </div>
+        <div class="modern-value">₹{{ highestExpense }}</div>
+      </div>
+      <div class="modern-card lowest" (click)="animateCard($event, 'lowest')">
+        <div class="flex items-center gap-3">
+          <div class="icon-ping relative">
+            <span class="ping-bg bg-pink-200"></span>
+            <svg class="icon-svg text-pink-600" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="8" rx="2"/><path d="M12 18v-4"/><circle cx="12" cy="18" r="2" fill="currentColor"/></svg>
+          </div>
+          <span class="modern-label">Lowest</span>
+        </div>
+        <div class="modern-value">₹{{ lowestExpense }}</div>
+      </div>
+    </div>
+    <!-- Pie Chart View with Slide-in Animation -->
+    <div *ngIf="activeTab === 'pie'" class="flex justify-center items-center mb-8 animate-slide-in-right">
+      <canvas id="pieChart" width="320" height="220"></canvas>
+    </div>
+    <!-- Bar Chart View with Slide-in Animation -->
+    <div *ngIf="activeTab === 'bar'" class="flex justify-center items-center mb-8 animate-slide-in-right">
+      <canvas id="barChart" width="340" height="220"></canvas>
+    </div>
+    <!-- Add Expense Form and Notification Side by Side -->
+    <div class="flex flex-row gap-6 items-start mb-8">
+      <form #expenseForm="ngForm" (ngSubmit)="addExpense(expenseForm)" class="flex flex-col gap-4 flex-1" novalidate>
+        <div class="grid grid-cols-4 gap-4">
+          <div class="flex flex-col animate-rotate-in-up" style="animation-delay:0.1s">
+            <label class="mb-1 font-semibold text-gray-700">Category</label>
+            <select [(ngModel)]="formExpense.category" name="category" required #category="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+              <option value="" disabled selected>Select category</option>
+              <option value="vegetable">🥦 Vegetable</option>
+              <option value="daily needs">🧻 Daily Needs</option>
+              <option value="fruit">🍎 Fruit</option>
+              <option value="clothes">👗 Clothes</option>
+              <option value="makeup">💄 Makeup</option>
+              <option value="other">🗂️ Other</option>
+            </select>
+            <span *ngIf="category.invalid && (category.dirty || category.touched)" class="text-xs text-red-500 mt-1">Category is required.</span>
+          </div>
+          <div class="flex flex-col animate-rotate-in-up" style="animation-delay:0.3s">
+            <label class="mb-1 font-semibold text-gray-700">Amount</label>
+            <input [(ngModel)]="formExpense.amount" name="amount" type="number" placeholder="Amount" required #amount="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="amount.invalid && (amount.dirty || amount.touched)" class="text-xs text-red-500 mt-1">Amount is required.</span>
+          </div>
+          <div class="flex flex-col animate-rotate-in-up" style="animation-delay:0.5s">
+            <label class="mb-1 font-semibold text-gray-700">Date</label>
+            <input [(ngModel)]="formExpense.date" name="date" type="date" placeholder="Date" required #date="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="date.invalid && (date.dirty || date.touched)" class="text-xs text-red-500 mt-1">Date is required.</span>
+          </div>
+          <div class="flex flex-col animate-rotate-in-up" style="animation-delay:0.7s">
+            <label class="mb-1 font-semibold text-gray-700">Description</label>
+            <input [(ngModel)]="formExpense.desc" name="desc" placeholder="Description" required #desc="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="desc.invalid && (desc.dirty || desc.touched)" class="text-xs text-red-500 mt-1">Description is required.</span>
+          </div>
+        </div>
+        <button type="submit"
+          class="mt-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white font-semibold rounded-lg shadow-md hover:scale-105 hover:from-purple-600 hover:to-blue-600 transition-transform duration-200 mx-auto w-auto">
+          Add Expense
+        </button>
+      </form>
+      <!-- Notification Message Beside Form -->
+      <div *ngIf="notificationMessage" class="px-4 py-2 rounded-lg text-white font-semibold shadow-md animate-fade-in mt-2 min-w-[180px]"
+        [ngClass]="{
+          'bg-green-500': notificationType === 'success',
+          'bg-yellow-500': notificationType === 'edit',
+          'bg-red-500': notificationType === 'delete',
+          'bg-red-400': notificationType === 'error'
+        }">
+        {{ notificationMessage }}
+      </div>
+    </div>
+    <!-- Edit Popup Modal -->
+    <div *ngIf="isEditing" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs animate-fade-in-up relative">
+        <button (click)="cancelEdit()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">✖</button>
+        <h4 class="text-2xl font-bold mb-4 text-purple-700">Edit Expense</h4>
+        <form #editForm="ngForm" (ngSubmit)="updateExpense(editForm)" class="flex flex-col gap-4" novalidate>
+          <div class="flex flex-col">
+            <label class="mb-1 font-semibold text-gray-700">Category</label>
+            <select [(ngModel)]="formExpense.category" name="editCategory" required #editCategory="ngModel" placeholder="select"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+              <option value="" disabled>Select category</option>
+              <option value="vegetable">🥦 Vegetable</option>
+              <option value="daily needs">🧻 Daily Needs</option>
+              <option value="fruit">🍎 Fruit</option>
+              <option value="clothes">👗 Clothes</option>
+              <option value="makeup">💄 Makeup</option>
+              <option value="other">🗂️ Other</option>
+            </select>
+            <span *ngIf="editCategory.invalid && (editCategory.dirty || editCategory.touched || editForm.submitted)" class="text-xs text-red-500 mt-1">Category is required.</span>
+          </div>
+          <div class="flex flex-col">
+            <label class="mb-1 font-semibold text-gray-700">Amount</label>
+            <input [(ngModel)]="formExpense.amount" name="editAmount" type="number" placeholder="Amount" required #editAmount="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="editAmount.invalid && (editAmount.dirty || editAmount.touched || editForm.submitted)" class="text-xs text-red-500 mt-1">Amount is required.</span>
+          </div>
+          <div class="flex flex-col">
+            <label class="mb-1 font-semibold text-gray-700">Date</label>
+            <input [(ngModel)]="formExpense.date" name="editDate" type="date" placeholder="Date" required #editDate="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="editDate.invalid && (editDate.dirty || editDate.touched || editForm.submitted)" class="text-xs text-red-500 mt-1">Date is required.</span>
+          </div>
+          <div class="flex flex-col">
+            <label class="mb-1 font-semibold text-gray-700">Description</label>
+            <input [(ngModel)]="formExpense.desc" name="editDesc" placeholder="Description" required #editDesc="ngModel"
+              class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+            <span *ngIf="editDesc.invalid && (editDesc.dirty || editDesc.touched || editForm.submitted)" class="text-xs text-red-500 mt-1">Description is required.</span>
+          </div>
+          <button type="submit"
+            class="mt-2 px-6 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-semibold rounded-lg shadow-md hover:scale-105 hover:from-yellow-500 hover:to-yellow-700 transition-transform duration-200">
+            Update Expense
+          </button>
+        </form>
+      </div>
+    </div>
+    <!-- Expense Table -->
+    <h3 class="text-xl font-semibold text-gray-700 mb-4">Expense List</h3>
+    <!-- Dashboard Section -->
+    <div class="w-full bg-white rounded-xl shadow-md p-4 mb-4 flex flex-col gap-4 animate-fade-in">
+      <div class="flex flex-wrap justify-between items-center mb-2">
+        <h4 class="text-lg font-bold text-purple-700">Search</h4>
+        <!-- Quick Category Links -->
+        <!-- <div class="flex flex-wrap gap-2">
+          <button (click)="filterCategory=''" [ngClass]="{'bg-purple-200 text-purple-800': filterCategory==='', 'bg-gray-100 text-gray-600': filterCategory!==''}" class="px-3 py-1 rounded-lg font-medium transition">All</button>
+          <button (click)="filterCategory='vegetable'" [ngClass]="{'bg-green-200 text-green-800': filterCategory==='vegetable', 'bg-gray-100 text-gray-600': filterCategory!=='vegetable'}" class="px-3 py-1 rounded-lg font-medium transition">🥦 Vegetable</button>
+          <button (click)="filterCategory='daily needs'" [ngClass]="{'bg-yellow-200 text-yellow-800': filterCategory==='daily needs', 'bg-gray-100 text-gray-600': filterCategory!=='daily needs'}" class="px-3 py-1 rounded-lg font-medium transition">🧻 Daily Needs</button>
+          <button (click)="filterCategory='fruit'" [ngClass]="{'bg-pink-200 text-pink-800': filterCategory==='fruit', 'bg-gray-100 text-gray-600': filterCategory!=='fruit'}" class="px-3 py-1 rounded-lg font-medium transition">🍎 Fruit</button>
+          <button (click)="filterCategory='clothes'" [ngClass]="{'bg-blue-200 text-blue-800': filterCategory==='clothes', 'bg-gray-100 text-gray-600': filterCategory!=='clothes'}" class="px-3 py-1 rounded-lg font-medium transition">👗 Clothes</button>
+          <button (click)="filterCategory='makeup'" [ngClass]="{'bg-red-200 text-red-800': filterCategory==='makeup', 'bg-gray-100 text-gray-600': filterCategory!=='makeup'}" class="px-3 py-1 rounded-lg font-medium transition">💄 Makeup</button>
+          <button (click)="filterCategory='other'" [ngClass]="{'bg-gray-300 text-gray-800': filterCategory==='other', 'bg-gray-100 text-gray-600': filterCategory!=='other'}" class="px-3 py-1 rounded-lg font-medium transition">🗂️ Other</button>
+        </div> -->
+      </div>
+      <div class="flex flex-wrap gap-4 items-center">
+        <input [(ngModel)]="searchText" name="searchText" type="text" placeholder="Search by description..." class="flex-1 min-w-[160px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition" />
+        <select [(ngModel)]="filterCategory" name="filterCategory" class="min-w-[160px] px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 transition">
+          <option value="">All Categories</option>
+          <option value="vegetable">🥦 Vegetable</option>
+          <option value="daily needs">🧻 Daily Needs</option>
+          <option value="fruit">🍎 Fruit</option>
+          <option value="clothes">👗 Clothes</option>
+          <option value="makeup">💄 Makeup</option>
+          <option value="other">🗂️ Other</option>
+        </select>
+      </div>
+    </div>
+    <!-- Table inside main card -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full table-auto border-collapse">
+        <thead>
+          <tr class="bg-purple-100">
+            <th class="px-4 py-2 text-left">Description</th>
+            <th class="px-4 py-2 text-left">Amount</th>
+            <th class="px-4 py-2 text-left">Date</th>
+            <th class="px-4 py-2 text-left">Category</th>
+            <th class="px-4 py-2 text-center">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let expense of visibleExpenses" class="hover:bg-purple-50 transition animate-fade-in-up">
+            <td class="px-4 py-2 font-medium text-gray-800">{{ expense.desc }}</td>
+            <td class="px-4 py-2 text-purple-700 font-bold">₹{{ expense.amount }}</td>
+            <td class="px-4 py-2">{{ expense.date }}</td>
+            <td class="px-4 py-2">
+              <span *ngIf="expense.category === 'vegetable'">🥦</span>
+              <span *ngIf="expense.category === 'daily needs'">🧻</span>
+              <span *ngIf="expense.category === 'fruit'">🍎</span>
+              <span *ngIf="expense.category === 'clothes'">👗</span>
+              <span *ngIf="expense.category === 'makeup'">💄</span>
+              <span *ngIf="expense.category === 'other'">🗂️</span>
+              <span class="capitalize ml-1">{{ expense.category }}</span>
+            </td>
+            <td class="px-4 py-2 text-center space-x-2">
+              <button (click)="viewExpense(expense)" class="px-2 py-1 rounded bg-blue-100 hover:bg-blue-300 text-blue-700 transition" title="View">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 inline align-middle"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+              </button>
+              <button (click)="editExpense(expense)" class="px-2 py-1 rounded bg-yellow-100 hover:bg-yellow-300 text-yellow-700 transition" title="Edit">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 inline align-middle"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828a2 2 0 01-2.828 0L9 13zm-6 6h12" /></svg>
+              </button>
+              <button (click)="openDeleteConfirm(expense._id)" class="px-2 py-1 rounded bg-red-100 hover:bg-red-300 text-red-700 transition" title="Delete">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5 inline align-middle"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M1 7h22M8 7V5a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+              </button>
+    <!-- Delete Confirmation Modal -->
+    <div *ngIf="showDeleteConfirm" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs animate-fade-in-up relative">
+        <button (click)="closeDeleteConfirm()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">✖</button>
+        <h4 class="text-xl font-bold mb-4 text-red-600">Delete Expense</h4>
+        <p class="mb-6 text-gray-700">Are you sure you want to delete this expense?</p>
+        <div class="flex justify-end gap-4">
+          <button (click)="closeDeleteConfirm()" class="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300 text-gray-700 transition">Cancel</button>
+          <button (click)="confirmDelete()" class="px-4 py-2 rounded bg-red-500 hover:bg-red-700 text-white font-semibold transition">Delete</button>
+        </div>
+      </div>
+    </div>
+            </td>
+          </tr>
+          <tr *ngIf="visibleExpenses.length === 0">
+            <td colspan="5" class="text-center text-gray-400 py-4">No expenses yet. Add your first expense!</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="flex justify-center mt-2" *ngIf="!isViewAll && (expenses | filter:searchText:filterCategory).length > 5">
+        <button (click)="toggleViewAll()" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold shadow hover:bg-purple-200 transition">View All</button>
+      </div>
+      <div class="flex justify-center mt-2" *ngIf="isViewAll && (expenses | filter:searchText:filterCategory).length > 5">
+        <button (click)="toggleViewAll()" class="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg font-semibold shadow hover:bg-purple-200 transition">Show Less</button>
+      </div>
+      <!-- Removed duplicate closing tbody and table tags -->
+    </div>
+    <!-- View Popup -->
+    <div *ngIf="showViewPopup" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs animate-fade-in-up relative">
+        <button (click)="closePopup()" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">✖</button>
+        <h4 class="text-2xl font-bold mb-4 text-purple-700">Expense Details</h4>
+        <div class="space-y-2">
+          <div><span class="font-semibold">Description:</span> {{ selectedExpense?.desc }}</div>
+          <div><span class="font-semibold">Amount:</span> ₹{{ selectedExpense?.amount }}</div>
+          <div><span class="font-semibold">Date:</span> {{ selectedExpense?.date }}</div>
+          <div><span class="font-semibold">Category:</span>
+            <span *ngIf="selectedExpense?.category === 'vegetable'">🥦</span>
+            <span *ngIf="selectedExpense?.category === 'daily needs'">🧻</span>
+            <span *ngIf="selectedExpense?.category === 'fruit'">🍎</span>
+            <span *ngIf="selectedExpense?.category === 'clothes'">👗</span>
+            <span *ngIf="selectedExpense?.category === 'makeup'">💄</span>
+            <span *ngIf="selectedExpense?.category === 'other'">🗂️</span>
+            <span class="capitalize ml-1">{{ selectedExpense?.category }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
