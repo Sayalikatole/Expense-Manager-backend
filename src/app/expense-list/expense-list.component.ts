@@ -114,24 +114,7 @@ export class ExpenseListComponent implements OnInit {
         responsive: false,
         animation: {
           animateScale: true,
-          animateRotate: true,
-          onComplete: function(animation:any) {
-            // Bounce effect: scale up and down
-            const chart = animation.chart;
-            let scale = 1;
-            let direction = 1;
-            let count = 0;
-            function bounce() {
-              if (count > 10) return;
-              scale += direction * 0.08;
-              if (scale > 1.15) direction = -1;
-              if (scale < 1) direction = 1;
-              chart.canvas.style.transform = `scaleY(${scale})`;
-              count++;
-              setTimeout(bounce, 40);
-            }
-            bounce();
-          }
+          animateRotate: true
         }
       }
     });
@@ -160,24 +143,7 @@ export class ExpenseListComponent implements OnInit {
         scales: { y: { beginAtZero: true } },
         animation: {
           duration: 1200,
-          easing: 'easeOutBounce',
-          onComplete: function(animation:any) {
-            // Bounce effect: scale up and down
-            const chart = animation.chart;
-            let scale = 1;
-            let direction = 1;
-            let count = 0;
-            function bounce() {
-              if (count > 10) return;
-              scale += direction * 0.08;
-              if (scale > 1.15) direction = -1;
-              if (scale < 1) direction = 1;
-              chart.canvas.style.transform = `scaleY(${scale})`;
-              count++;
-              setTimeout(bounce, 40);
-            }
-            bounce();
-          }
+          easing: 'easeOutCubic'
         }
       }
     });
