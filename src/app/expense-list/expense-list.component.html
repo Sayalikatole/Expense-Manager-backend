@@ -1,6 +1,15 @@
 
 
 <div class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 flex flex-col items-center py-8">
+  <!-- Notification Message at Top -->
+  <div *ngIf="notificationMessage" class="fixed top-6 right-6 z-[200] w-full max-w-md">
+    <div [ngClass]="{
+      'bg-green-100 text-green-800 border-green-300': notificationType==='success' || notificationType==='edit',
+      'bg-red-100 text-red-800 border-red-300': notificationType==='error' || notificationType==='delete'
+    }" class="border px-6 py-3 rounded-xl shadow-lg text-center font-semibold text-lg animate-fade-in-up transition-all duration-300">
+      {{ notificationMessage }}
+    </div>
+  </div>
   <div class="w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-purple-100 p-8 transition-all duration-500 hover:shadow-[0_8px_32px_rgba(80,0,180,0.12)] animate-fade-in">
     <h2 class="text-3xl font-bold text-purple-700 mb-6 text-center">Expense Manager</h2>
     <!-- Tabs for Card, Pie Chart, Bar Chart -->
@@ -83,16 +92,6 @@
           Add Expense
         </button>
       </form>
-      <!-- Notification Message Beside Form -->
-      <div *ngIf="notificationMessage" class="px-4 py-2 rounded-lg text-white font-semibold shadow-md animate-fade-in mt-2 min-w-[180px]"
-        [ngClass]="{
-          'bg-green-500': notificationType === 'success',
-          'bg-yellow-500': notificationType === 'edit',
-          'bg-red-500': notificationType === 'delete',
-          'bg-red-400': notificationType === 'error'
-        }">
-        {{ notificationMessage }}
-      </div>
     </div>
     <!-- Edit Popup Modal -->
     <div *ngIf="isEditing" class="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
